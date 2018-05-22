@@ -8,6 +8,8 @@ import glob
 import numpy as np
 from scipy import sparse
 from concurrent.futures import TimeoutError
+from sqlalchemy import create_engine
+from googleCloud import *
 
 cache_file = lambda filename: Path().resolve().joinpath(*['cache', filename])
 
@@ -25,16 +27,7 @@ def jobConfig():
     return config
 
 def run_job(query):
-    print('Submitting query')
     j = client().query(query=query, job_config=jobConfig())
-    with tqdm() as pbar:
-        while True:
-            try:
-                j.result(timeout=1)
-            except TimeoutError:                
-                pbar.update(1)
-            else:
-                break
     return j
 
 def fetchQuery(query):
@@ -68,16 +61,12 @@ def get_node_ids_dict(edgelist):
 
 def get_edges(edgelist, subreddit):
     node_ids_dict = get_node_ids_dict(edgelist)
-    #start = time.time()
+
     edgelist = edgelist[edgelist['subreddit']!=subreddit]
     edges = pd.DataFrame({'subreddit':edgelist.subreddit.map(lambda x: node_ids_dict[x]),
                           'author':edgelist.author.map(lambda x: node_ids_dict[x]),
                           'weight':edgelist.weight})
     edges = edges[['subreddit','author','weight']]
-    #end = time.time()
-
-    #elapsed = end-start
-    #print(f'that took {elapsed} seconds')
     
     return edges
 
@@ -90,7 +79,6 @@ def project_unipartite_network(edgelist, subreddit, row='subreddit',col='author'
     mat_coo = sparse.coo_matrix((data, (row_ind, col_ind)))
     mat_coo.sum_duplicates()
     csr = mat_coo.tocsr()
-    #csr.sum_duplicates()
 
     sub_net = csr.dot(csr.T).tolil()
     sub_net.setdiag(0)
@@ -112,26 +100,17 @@ def get_degrees(network, network_type):
     return degrees, weighted_degrees
     
 def get_stats_df(data, subreddit):
-    #print('getting subreddit network...')
     sub_net = project_unipartite_network(data, subreddit)
     subreddit_density = get_network_density(sub_net)
-    #subreddit_degrees, subreddit_weighted_degrees = get_degrees(sub_net, 'subreddit')
     
-    #print('getting author network...')
     author_net = project_unipartite_network(data, subreddit,row='author', col='subreddit')
     author_density = get_network_density(author_net)
-    #author_degrees, author_weighted_degrees = get_degrees(author_net, 'author')
-
-    print('compiling stats...')
+ 
     stats = {'sub_counts':data.subreddit.value_counts().describe(),
              'author_counts':data.author.value_counts().describe(),
              'bipartite_edge_weights':data.weight.describe(),
              'sub_net_density':subreddit_density,
-             #'subreddit_degrees':subreddit_degrees['subreddit_degrees'].describe(),
-             #'subreddit_weighted_degrees':subreddit_weighted_degrees['subreddit_weighted_degrees'].describe(),
-             'author_net_density':author_density,
-             #'author_degrees':author_degrees['author_degrees'].describe(),
-             #'author_weighted_degrees':author_weighted_degrees['author_weighted_degrees'].describe()
+             'author_net_density':author_density
             }
 
     stats_df = pd.DataFrame.from_dict(stats)
@@ -169,25 +148,73 @@ def fetchSubredditData(subreddit):
     data = fetchQuery(query)
     
     return data
-     
-def saveStatsDfs(subreddit):
+    
+def getStatsDf(subreddit):
     data = fetchSubredditData(subreddit)
     data.columns = ['subreddit','author','weight']
     stats_df = get_stats_df(data, subreddit)
-    stats_df.to_csv(cache_file(f'{subreddit}_stats_df.csv'))
+    stats_df.reset_index(drop=False, inplace=True)
+
+    return stats_df
+      
+def get_engine():
+    return create_engine('sqlite:///network_stats.db', echo=False)
+
+def saveStatsDf(subreddit):
+    engine = get_engine()
+    stats_df = getStatsDf(subreddit)
+    table_name='merged_stats_df'
+    stats_df.to_sql(name=table_name, con=engine, if_exists='append', index=False)
     print(f'done with {subreddit}!')
+    
+def load_stats_df():
+    engine = get_engine()
+    table_name='merged_stats_df'
+    stats_df = pd.read_sql_table(table_name, con=engine)
+    
+    return stats_df
 
-sublist = fetchSubList()
+import google.auth
+from google.cloud import storage
 
-path = str(cache_file('*_stats_df.csv'))
-files = glob.glob(path)
-completed = [file.replace(str(cache_file('')), '').replace('_stats_df.csv', '').lstrip('/') for file in files]
+def get_storage_client():
+    credentials, project = google.auth.default() # why returning empty project name?
+    project = 'aerobic-datum-126519'
+    return storage.Client(project=project,
+                             credentials=credentials)
+def list_buckets():
+    storage_client = get_storage_client()
+    buckets = list(storage_client.list_buckets())
+    print(buckets)
+    
+def create_bucket(bucket_name):
+    storage_client = get_storage_client()
+    bucket = storage_client.create_bucket(bucket_name)
+    print('Bucket {} created.'.format(bucket.name))
+    
+def upload_blob(bucket_name, file_name):
+    """Uploads a file to the bucket."""
+    storage_client = get_storage_client()
+    bucket = storage_client.get_bucket(bucket_name)
+    blob = bucket.blob(file_name)
 
-sampleSubs = sublist.subreddit.sample(10)
-for subreddit in sampleSubs:
-    if subreddit not in completed:
-        print(subreddit)
-        saveStatsDfs(subreddit)
+    blob.upload_from_filename(file_name)
+
+    print(f'File {file_name} uploaded.')
+    
+
+if __name__ == "__main__":
+    sublist = fetchSubList()
+    sampleSubs = sublist.subreddit.sample(2)
+    n = 1
+    for subreddit in sampleSubs:
+        print(n)
+        saveStatsDf(subreddit)
+        n += 1
+    
+    upload_blob('network-analysis', 'network_stats.db')
+    
+            
 
 
     
