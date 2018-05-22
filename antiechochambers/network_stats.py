@@ -22,7 +22,7 @@ def jobConfig():
     config.query_parameters = (bigquery.ScalarQueryParameter('size', 'INT64', 10),)
     config.use_legacy_sql = False
     config.maximum_bytes_billed = int(5e9)
-    
+
     return config
 
 def run_job(query):
@@ -32,7 +32,7 @@ def run_job(query):
 def fetchQuery(query):
     j = run_job(query)
     df = j.to_dataframe()
-    
+
     return df
 
 def fetchSubredditData(subreddit):
@@ -51,9 +51,9 @@ def fetchSubredditData(subreddit):
                 HAVING weight > 2"""
 
     data = fetchQuery(query)
-    
+
     return data
-    
+
 def get_node_ids_dict(edgelist):
     node_ids = list(edgelist.subreddit.unique()) + list(edgelist.author.unique())
     return dict(zip(node_ids, range(len(node_ids))))
@@ -66,7 +66,7 @@ def get_edges(edgelist, subreddit):
                           'author':edgelist.author.map(lambda x: node_ids_dict[x]),
                           'weight':edgelist.weight})
     edges = edges[['subreddit','author','weight']]
-    
+
     return edges
 
 def project_unipartite_network(edgelist, subreddit, row='subreddit',col='author'):
@@ -81,9 +81,9 @@ def project_unipartite_network(edgelist, subreddit, row='subreddit',col='author'
 
     sub_net = csr.dot(csr.T).tolil()
     sub_net.setdiag(0)
-    
+
     return sub_net
-    
+
 def get_network_density(sub_net):
     assert sub_net.shape[0]==sub_net.shape[1], 'matrix is not square'
 
@@ -91,20 +91,20 @@ def get_network_density(sub_net):
     E = sub_net.getnnz()
 
     return (E-N+1)/(N*(N-3)+2)
-    
+
 def get_degrees(network, network_type):
     degrees = pd.DataFrame(np.count_nonzero(network.todense(), axis=1), columns=[f'{network_type}_degrees'])
     weighted_degrees = pd.DataFrame(network.sum(axis=1),columns=[f'{network_type}_weighted_degrees'])
-    
+
     return degrees, weighted_degrees
-    
+
 def get_stats_df(data, subreddit):
     sub_net = project_unipartite_network(data, subreddit)
     subreddit_density = get_network_density(sub_net)
-    
+
     author_net = project_unipartite_network(data, subreddit,row='author', col='subreddit')
     author_density = get_network_density(author_net)
- 
+
     stats = {'sub_counts':data.subreddit.value_counts().describe(),
              'author_counts':data.author.value_counts().describe(),
              'bipartite_edge_weights':data.weight.describe(),
@@ -116,7 +116,7 @@ def get_stats_df(data, subreddit):
     stats_df.index.name = 'stat'
     stats_df['subreddit'] = subreddit
     return stats_df
-    
+
 def fetchSubList():
     """should create bot table to call on"""
     query = f"""SELECT *
@@ -124,7 +124,7 @@ def fetchSubList():
                  """
 
     data = fetchQuery(query)
-    
+
     return data
 
 def fetchSubredditData(subreddit):
@@ -145,9 +145,9 @@ def fetchSubredditData(subreddit):
                 """
 
     data = fetchQuery(query)
-    
+
     return data
-    
+
 def getStatsDf(subreddit):
     data = fetchSubredditData(subreddit)
     data.columns = ['subreddit','author','weight']
@@ -155,7 +155,7 @@ def getStatsDf(subreddit):
     stats_df.reset_index(drop=False, inplace=True)
 
     return stats_df
-      
+
 def get_engine():
     return create_engine('sqlite:///network_stats.db', echo=False)
 
@@ -165,12 +165,12 @@ def saveStatsDf(subreddit):
     table_name='merged_stats_df'
     stats_df.to_sql(name=table_name, con=engine, if_exists='append', index=False)
     print(f'done with {subreddit}!')
-    
+
 def load_stats_df():
     engine = get_engine()
     table_name='merged_stats_df'
     stats_df = pd.read_sql_table(table_name, con=engine)
-    
+
     return stats_df
 
 import google.auth
@@ -185,12 +185,12 @@ def list_buckets():
     storage_client = get_storage_client()
     buckets = list(storage_client.list_buckets())
     print(buckets)
-    
+
 def create_bucket(bucket_name):
     storage_client = get_storage_client()
     bucket = storage_client.create_bucket(bucket_name)
     print('Bucket {} created.'.format(bucket.name))
-    
+
 def upload_blob(bucket_name, file_name):
     """Uploads a file to the bucket."""
     storage_client = get_storage_client()
@@ -200,21 +200,15 @@ def upload_blob(bucket_name, file_name):
     blob.upload_from_filename(file_name)
 
     print(f'File {file_name} uploaded.')
-    
+
 
 if __name__ == "__main__":
     sublist = fetchSubList()
-    sampleSubs = sublist.subreddit.sample(2)
+    sampleSubs = sublist.subreddit
     n = 1
     for subreddit in sampleSubs:
         print(n)
         saveStatsDf(subreddit)
         n += 1
-    
+
     upload_blob('network-analysis', 'network_stats.db')
-    
-            
-
-
-    
-    

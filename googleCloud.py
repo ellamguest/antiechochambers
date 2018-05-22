@@ -24,4 +24,4 @@ def upload_blob(bucket_name, file_name):
 
     blob.upload_from_filename(file_name)
 
-    print('File {} uploaded.'.format(file_name))
+    print(f'File {file_name} uploaded.')

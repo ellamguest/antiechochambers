@@ -1,14 +1,5 @@
 gcloud compute --project "aerobic-datum-126519" ssh --zone "us-central1-b" "instance-2" #start instance
 gsutil cp -r gs://network-analysis .
-sudo apt-get update
-sudo apt-get upgrade
-sudo apt-get install -y build-essential
-cd /tmp
-curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
-bash Miniconda3-latest-Linux-x86_64.sh
-source ~/.bashrc
-conda install ipython
 cd ~/network-analysis/
-pip install -r requirements.txt
-ipython
-%run network_stats.py
+chmod u+x setup.sh
+./setup.sh
