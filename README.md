@@ -45,13 +45,34 @@ Blah blah. This is what I\'m talking about. Blah Blah.
 :::
 
 ::: {.cell .border-box-sizing .code_cell .rendered}
+::: {.input}
+::: {.prompt .input_prompt}
+In \[105\]:
+:::
+
+::: {.inner_cell}
+::: {.input_area}
+::: {.highlight .hl-ipython3}
+    %autoreload 2
+
+    from network_stats import *
+    import seaborn as sns
+    from bokeh.plotting import figure, output_notebook, show, ColumnDataSource, Row, Column
+    from bokeh.models import HoverTool
+
+    output_notebook(hide_banner=True)
+:::
+:::
+:::
+:::
+
 ::: {.output_wrapper}
 ::: {.output}
 ::: {.output_area}
 ::: {.prompt}
 :::
 
-::: {#dc382e15-7411-4c7a-94ce-89989dd46f33}
+::: {#7f68a7bf-3ad6-42a7-a130-9f77cc6a7940}
 :::
 
 ::: {.output_subarea .output_javascript}
@@ -62,9 +83,93 @@ Blah blah. This is what I\'m talking about. Blah Blah.
 :::
 
 ::: {.cell .border-box-sizing .code_cell .rendered}
+::: {.input}
+::: {.prompt .input_prompt}
+In \[117\]:
+:::
+
+::: {.inner_cell}
+::: {.input_area}
+::: {.highlight .hl-ipython3}
+    def getDensityDf():
+        df = load_stats_df()
+        density = (df[df['stat']=='count']
+                   .set_index('subreddit')
+                   .rename(columns=
+                           {'author_net_density':'author',
+                               'sub_net_density':'sub',
+                           'bipartite_edge_weights':'edge_count'}))
+
+        density['count_ratio'] = density['author_counts']/density['sub_counts']
+        density['density_ratio'] = density['author']/density['sub']
+        density = density.reset_index(drop=False)
+
+        density = density.rename(columns={'author':'authorNetDensity',
+                               'sub':'subredditNetDensity',
+                               'author_counts':'numAuthors',
+                               'sub_counts':'numSubreddits',
+                               'edge_count': 'numEdges'})
+        
+        return density
+
+
+
+    def scatterPlot(df, xaxis, yaxis, title):
+        source = ColumnDataSource(data=df)
+
+        hover = HoverTool(tooltips=[
+            ("subreddit", "@subreddit"),
+            ("author density", "@authorNetDensity{1.111}"),
+            ("subreddit density", "@subredditNetDensity{1.111}"),
+            ("# authors", "@numAuthors{int}"),
+            ("# subreddits", "@numSubreddits{int}"),
+            ("# author-subreddit edges", "@numEdges{int}"),
+        ])
+
+        tools = [hover, "box_select", "reset", "wheel_zoom"]
+        
+        p = figure(plot_width=500, plot_height=500, tools= tools,
+                   title=title)
+
+        p.circle(xaxis, yaxis, size=5, color='grey', alpha=0.3, source=source)
+
+        main = df[df['subreddit'].isin(['The_Donald', 'changemyview'])].copy()
+        main['color'] = ['blue','orange']
+        main_source = ColumnDataSource(data=main)
+
+        p.circle(xaxis, yaxis, size=10, color='color', line_color='black', source=main_source)
+
+        p.xaxis.axis_label = xaxis
+        p.yaxis.axis_label = yaxis
+
+        p.xaxis.minor_tick_line_color = None 
+        p.yaxis.minor_tick_line_color = None 
+
+        p.xgrid.visible = False
+        p.ygrid.visible = False
+
+        return p
+:::
+:::
+:::
+:::
 :::
 
 ::: {.cell .border-box-sizing .code_cell .rendered}
+::: {.input}
+::: {.prompt .input_prompt}
+In \[103\]:
+:::
+
+::: {.inner_cell}
+::: {.input_area}
+::: {.highlight .hl-ipython3}
+    df = getDensityDf()
+    num_subs = df.subreddit.unique().shape[0]
+:::
+:::
+:::
+:::
 :::
 
 ::: {.cell .border-box-sizing .text_cell .rendered}
@@ -95,6 +200,23 @@ Descriptive Analysis[¶](#Descriptive-Analysis){.anchor-link} {#Descriptive-Anal
 :::
 
 ::: {.cell .border-box-sizing .code_cell .rendered}
+::: {.input}
+::: {.prompt .input_prompt}
+In \[118\]:
+:::
+
+::: {.inner_cell}
+::: {.input_area}
+::: {.highlight .hl-ipython3}
+    densityPlot = scatterPlot(df, "authorNetDensity", "subredditNetDensity", "Comparison of One-Mode Network Densities")
+    countPlot = scatterPlot(df, "numAuthors", "numSubreddits", "Comparison of Node Counts by Type")
+
+    show(Row(densityPlot, countPlot))
+:::
+:::
+:::
+:::
+
 ::: {.output_wrapper}
 ::: {.output}
 ::: {.output_area}
@@ -113,7 +235,7 @@ Descriptive Analysis[¶](#Descriptive-Analysis){.anchor-link} {#Descriptive-Anal
 ::: {.prompt}
 :::
 
-::: {#022dfece-7b28-44b6-9f88-70c42eb94119}
+::: {#aed8abbd-39ad-477c-bcd1-6916992bb92a}
 :::
 
 ::: {.output_subarea .output_javascript}
@@ -124,6 +246,23 @@ Descriptive Analysis[¶](#Descriptive-Analysis){.anchor-link} {#Descriptive-Anal
 :::
 
 ::: {.cell .border-box-sizing .code_cell .rendered}
+::: {.input}
+::: {.prompt .input_prompt}
+In \[124\]:
+:::
+
+::: {.inner_cell}
+::: {.input_area}
+::: {.highlight .hl-ipython3}
+    authorEdgePlot = scatterPlot(df, "numEdges", "authorNetDensity", None)
+    subredditEdgePlot = scatterPlot(df, "numEdges", "subredditNetDensity", None)
+
+    show(Row(authorEdgePlot, subredditEdgePlot))
+:::
+:::
+:::
+:::
+
 ::: {.output_wrapper}
 ::: {.output}
 ::: {.output_area}
@@ -142,7 +281,7 @@ Descriptive Analysis[¶](#Descriptive-Analysis){.anchor-link} {#Descriptive-Anal
 ::: {.prompt}
 :::
 
-::: {#92d46999-2852-4b60-9cdd-ead55b387a42}
+::: {#e7076808-322a-4751-a214-6c73d7a0914f}
 :::
 
 ::: {.output_subarea .output_javascript}
@@ -153,6 +292,35 @@ Descriptive Analysis[¶](#Descriptive-Analysis){.anchor-link} {#Descriptive-Anal
 :::
 
 ::: {.cell .border-box-sizing .code_cell .rendered}
+::: {.input}
+::: {.prompt .input_prompt}
+In \[140\]:
+:::
+
+::: {.inner_cell}
+::: {.input_area}
+::: {.highlight .hl-ipython3}
+    %%writefile nbextensions.tpl
+    {%- extends 'full.tpl' -%}
+    ## remove input cells
+    {% block input_group -%}
+    {% endblock input_group %}
+    ## change the appearance of execution count
+    {% block in_prompt %}
+    # [{{ cell.execution_count if cell.execution_count else ' ' }}]:
+    {% endblock in_prompt %}
+
+    {% block output_group -%}
+    {%- if cell.metadata.hide_output -%}
+    {%- else -%}
+        {{ super() }}
+    {%- endif -%}
+    {% endblock output_group %}
+:::
+:::
+:::
+:::
+
 ::: {.output_wrapper}
 ::: {.output}
 ::: {.output_area}
@@ -160,16 +328,7 @@ Descriptive Analysis[¶](#Descriptive-Analysis){.anchor-link} {#Descriptive-Anal
 :::
 
 ::: {.output_subarea .output_stream .output_stdout .output_text}
-    Fetching package metadata .............
-    Solving package specifications: .
-
-    Package plan for installation in environment //anaconda/envs/python3.6:
-
-    The following packages will be UPDATED:
-
-        pandoc: 1.19.2.1-ha5e8f32_1 --> 2.2.1-hde52d81_0 conda-forge
-
-    pandoc-2.2.1-h 100% |################################| Time: 0:00:02   5.03 MB/s       | ETA:  0:00:01   3.97 MB/s
+    Overwriting nbextensions.tpl
 :::
 :::
 :::
@@ -177,6 +336,21 @@ Descriptive Analysis[¶](#Descriptive-Analysis){.anchor-link} {#Descriptive-Anal
 :::
 
 ::: {.cell .border-box-sizing .code_cell .rendered}
+::: {.input}
+::: {.prompt .input_prompt}
+In \[141\]:
+:::
+
+::: {.inner_cell}
+::: {.input_area}
+::: {.highlight .hl-ipython3}
+    ! jupyter nbconvert --template=nbextensions --to=html README.ipynb
+    ! pandoc -s -r html README.html -o README.md
+:::
+:::
+:::
+:::
+
 ::: {.output_wrapper}
 ::: {.output}
 ::: {.output_area}
@@ -185,43 +359,7 @@ Descriptive Analysis[¶](#Descriptive-Analysis){.anchor-link} {#Descriptive-Anal
 
 ::: {.output_subarea .output_stream .output_stdout .output_text}
     [NbConvertApp] Converting notebook README.ipynb to html
-    [NbConvertApp] Writing 632547 bytes to README.html
-:::
-:::
-:::
-:::
-:::
-
-::: {.cell .border-box-sizing .code_cell .rendered}
-:::
-
-::: {.cell .border-box-sizing .code_cell .rendered}
-::: {.output_wrapper}
-::: {.output}
-::: {.output_area}
-::: {.prompt}
-:::
-
-::: {.output_subarea .output_stream .output_stdout .output_text}
-    README-old.md                      jupyter_nbconvert_config.py
-    README.ipynb                       lesmismatrix.html
-    README.md                          lesmismatrix_files
-    Untitled.ipynb                     nbextensions.tpl
-    Untitled1.ipynb                    network-measures.ipynb
-    __pycache__                        network_stats.csv
-    _config.yml                        network_stats.db
-    antiechochambers                   network_stats.py
-    antiechochambers-1ba7f7f4c68e.json reddit-network-774059619c28.json
-    antiechochambers-ebc9093af6b4.json requirements.txt
-    bg-api-key.json                    scripts
-    cache                              sqlite_example.db
-    chamber-networks                   sqlite_example.db3
-    credentials.json                   test.sh
-    data                               untitled.txt
-    ec2-networks-key-pair.pem          untitled1.txt
-    figures                            untitled2.txt
-    googleCloud.py                     untitled3.txt
-    googleComputeInstanceSetup.txt     untitled4.txt
+    [NbConvertApp] Writing 613864 bytes to README.html
 :::
 :::
 :::
