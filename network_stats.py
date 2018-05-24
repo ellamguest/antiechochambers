@@ -9,8 +9,14 @@ import numpy as np
 from scipy import sparse
 from concurrent.futures import TimeoutError
 from sqlalchemy import create_engine
+import google.auth
+from google.cloud import storage
 
 cache_file = lambda filename: Path().resolve().joinpath(*['cache', filename])
+
+""""" DATA IMPORT & EXPORT """
+
+"""BIGQUERY FUNCTIONS"""
 
 def client():
     """require a bigquery project and credentials, save in json in root main directory"""
@@ -34,26 +40,68 @@ def fetchQuery(query):
     df = j.to_dataframe()
     
     return df
+    
+def fetchSubList():
+    """should create bot table to call on"""
+    query = f"""SELECT *
+                 FROM `aerobic-datum-126519.sms_18_sample_subreddits.randomSubreddits`
+                 """
+
+    data = fetchQuery(query)
+    
+    return data
 
 def fetchSubredditData(subreddit):
     """should create bot table to call on"""
-    query = f"""SELECT subreddit, author, COUNT(created_utc) as weight
-                FROM `fh-bigquery.reddit_comments.2017_06`
+    query = f"""
+                SELECT *
+                FROM `aerobic-datum-126519.sms_18_sample_subreddits.allAuthorCommentCounts`
                 WHERE author in (SELECT author
-                                 FROM `aerobic-datum-126519.sms_18_sample_subreddits.mainSubInCounts`
-                                 WHERE (subreddit = '{subreddit}') AND (authorInCount > 2) AND
+                                 FROM `aerobic-datum-126519.sms_18_sample_subreddits.subredditAuthors`
+                                 WHERE (subreddit = '{subreddit}') AND (weight > 2) AND
                                          author not in (SELECT author
                                                          FROM `fh-bigquery.reddit_comments.bots_201505`)
                                         AND (lower(author) NOT LIKE '%bot%')
                                         AND (author NOT LIKE 'JlmmyButler')
                                         AND (author NOT LIKE 'TotesMessenger'))
-                GROUP BY subreddit, author
-                HAVING weight > 2"""
+                    AND authorCommentCount > 2
+                ORDER BY subreddit, author
+                """
 
     data = fetchQuery(query)
     
     return data
     
+""" GOOGLE STORAGE FUNCTIONS """
+
+def get_storage_client():
+    credentials, project = google.auth.default() # why returning empty project name?
+    project = 'aerobic-datum-126519'
+    return storage.Client(project=project,
+                             credentials=credentials)
+def list_buckets():
+    storage_client = get_storage_client()
+    buckets = list(storage_client.list_buckets())
+    print(buckets)
+    
+def create_bucket(bucket_name):
+    storage_client = get_storage_client()
+    bucket = storage_client.create_bucket(bucket_name)
+    print('Bucket {} created.'.format(bucket.name))
+    
+def upload_blob(bucket_name, file_name):
+    """Uploads a file to the bucket."""
+    storage_client = get_storage_client()
+    bucket = storage_client.get_bucket(bucket_name)
+    blob = bucket.blob(file_name)
+
+    blob.upload_from_filename(file_name)
+
+    print(f'File {file_name} uploaded.')    
+    
+    
+""" NETWORK FUNCTIONS """    
+
 def get_node_ids_dict(edgelist):
     node_ids = list(edgelist.subreddit.unique()) + list(edgelist.author.unique())
     return dict(zip(node_ids, range(len(node_ids))))
@@ -86,11 +134,12 @@ def project_unipartite_network(edgelist, subreddit, row='subreddit',col='author'
     
 def get_network_density(sub_net):
     assert sub_net.shape[0]==sub_net.shape[1], 'matrix is not square'
+    
+    E = sub_net.getnnz() # number of observed edges
+    n = sub_net.shape[0] # number of nodes
+    P = (n*(n-1))*2 # number of possible unidirectional edges
 
-    N = sub_net.shape[0]
-    E = sub_net.getnnz()
-
-    return (E-N+1)/(N*(N-3)+2)
+    return E/P
     
 def get_degrees(network, network_type):
     degrees = pd.DataFrame(np.count_nonzero(network.todense(), axis=1), columns=[f'{network_type}_degrees'])
@@ -117,36 +166,8 @@ def get_stats_df(data, subreddit):
     stats_df['subreddit'] = subreddit
     return stats_df
     
-def fetchSubList():
-    """should create bot table to call on"""
-    query = f"""SELECT *
-                 FROM `aerobic-datum-126519.sms_18_sample_subreddits.randomSubreddits`
-                 """
 
-    data = fetchQuery(query)
-    
-    return data
-
-def fetchSubredditData(subreddit):
-    """should create bot table to call on"""
-    query = f"""
-                SELECT *
-                FROM `aerobic-datum-126519.sms_18_sample_subreddits.allAuthorCommentCounts`
-                WHERE author in (SELECT author
-                                 FROM `aerobic-datum-126519.sms_18_sample_subreddits.randomSubredditAuthors`
-                                 WHERE (subreddit = '{subreddit}') AND (authorInCOunt > 2) AND
-                                         author not in (SELECT author
-                                                         FROM `fh-bigquery.reddit_comments.bots_201505`)
-                                        AND (lower(author) NOT LIKE '%bot%')
-                                        AND (author NOT LIKE 'JlmmyButler')
-                                        AND (author NOT LIKE 'TotesMessenger'))
-                    AND authorCommentCount > 2
-                ORDER BY subreddit, author
-                """
-
-    data = fetchQuery(query)
-    
-    return data
+""" DATA PROCESSING & STORAGE """
     
 def getStatsDf(subreddit):
     data = fetchSubredditData(subreddit)
@@ -155,51 +176,64 @@ def getStatsDf(subreddit):
     stats_df.reset_index(drop=False, inplace=True)
 
     return stats_df
+
+def saveSQL(df, table_name, **kwargs):
+    engine = get_engine()
+    df.to_sql(name=table_name, con=engine,  **kwargs)
+    
+def loadSQL(table_name, index_col=None):
+    engine = get_engine()
+    df = pd.read_sql_table(table_name=table_name, con=engine, index_col=index_col)
+    
+    return df
+    
+def saveStatsDf(subreddit):
+    stats_df = getStatsDf(subreddit)
+    table_name='merged_stats_df'
+    saveSQL(stats_df, table_name)
+    print(f'done with {subreddit}!')
+    
+def load_stats_df():
+    return loadSQL('merged_stats_df')
       
 def get_engine():
     return create_engine('sqlite:///network_stats.db', echo=False)
 
-def saveStatsDf(subreddit):
-    engine = get_engine()
-    stats_df = getStatsDf(subreddit)
-    table_name='merged_stats_df'
-    stats_df.to_sql(name=table_name, con=engine, if_exists='append', index=False)
-    print(f'done with {subreddit}!')
+def getAuthorCounts(subreddit, data):
+    authorCounts = data.subreddit.value_counts(normalize=True).sort_values(ascending=False)
+    authorCounts.name = subreddit
+    authorCounts = pd.DataFrame(authorCounts)
+    authorCounts.index.name = 'index'
     
-def load_stats_df():
-    engine = get_engine()
-    table_name='merged_stats_df'
-    stats_df = pd.read_sql_table(table_name, con=engine)
+    return authorCounts
     
-    return stats_df
-
-import google.auth
-from google.cloud import storage
-
-def get_storage_client():
-    credentials, project = google.auth.default() # why returning empty project name?
-    project = 'aerobic-datum-126519'
-    return storage.Client(project=project,
-                             credentials=credentials)
-def list_buckets():
-    storage_client = get_storage_client()
-    buckets = list(storage_client.list_buckets())
-    print(buckets)
+def getCommentCounts(subreddit, data):
+    commentCounts = data.groupby('subreddit')['authorCommentCount'].sum()
+    commentCounts = commentCounts/commentCounts.sum()
+    commentCounts.name = subreddit
+    commentCounts = pd.DataFrame(commentCounts)
+    commentCounts.index.name = 'index'
     
-def create_bucket(bucket_name):
-    storage_client = get_storage_client()
-    bucket = storage_client.create_bucket(bucket_name)
-    print('Bucket {} created.'.format(bucket.name))
+    return commentCounts
+
+def mergeTables(table_name, adding):
+    existing = loadSQL(table_name, index_col='index')
+    if existing.shape == (0,1):
+        updated = adding
+    else:
+        updated = existing.merge(adding, left_index=True, right_index=True, how='outer')
+    saveSQL(updated, table_name, if_exists='replace', index=True)
     
-def upload_blob(bucket_name, file_name):
-    """Uploads a file to the bucket."""
-    storage_client = get_storage_client()
-    bucket = storage_client.get_bucket(bucket_name)
-    blob = bucket.blob(file_name)
-
-    blob.upload_from_filename(file_name)
-
-    print(f'File {file_name} uploaded.')
+def saveSubredditWeights(subreddit):
+    data = fetchSubredditData(subreddit)
+    print("getting subreddit weights for {}".format(subreddit))
+    authorCounts = getAuthorCounts(subreddit, data)
+    commentCounts = getCommentCounts(subreddit, data)
+    
+    mergeTables('subredditAuthorCounts', authorCounts)
+    mergeTables('subredditCommentCounts', commentCounts)
+    
+    
     
 
 if __name__ == "__main__":
