@@ -111,6 +111,7 @@ cache/
 #data
 *.csv
 *.pkl
+*.db
 /cache/
 /data/
 /figures/

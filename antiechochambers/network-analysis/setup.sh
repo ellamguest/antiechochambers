@@ -4,11 +4,11 @@ cd /tmp
 curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash Miniconda3-latest-Linux-x86_64.sh
 source ~/.bashrc
-pip install virtualenv
 virtualenv --python python3 env
 source env/bin/activate
 conda install ipython -y
 cd ~/network-analysis/
 pip install -r requirements.txt
 pip install --upgrade google-cloud-bigquery google-cloud-storage
-python network_stats.py
+ipython
+%run network_stats.py

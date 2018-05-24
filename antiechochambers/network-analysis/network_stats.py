@@ -10,7 +10,7 @@ import numpy as np
 from scipy import sparse
 from concurrent.futures import TimeoutError
 from sqlalchemy import create_engine
-
+import base64
 
 cache_file = lambda filename: Path().resolve().joinpath(*['cache', filename])
 
@@ -39,7 +39,6 @@ def fetchQuery(query):
 
 def fetchSubredditData(subreddit):
     """should create bot table to call on"""
-    """for main subs only"""
     query = """SELECT subreddit, author, COUNT(created_utc) as weight
                 FROM `fh-bigquery.reddit_comments.2017_06`
                 WHERE author in (SELECT author
@@ -51,7 +50,7 @@ def fetchSubredditData(subreddit):
                                         AND (author NOT LIKE 'JlmmyButler')
                                         AND (author NOT LIKE 'TotesMessenger'))
                 GROUP BY subreddit, author
-                HAVING weight > 2""".format(subreddit)
+                HAVING weight > 2""".format(subreddit).encode('UTF-8')
 
 
     data = fetchQuery(query)
@@ -176,10 +175,6 @@ def load_stats_df():
     stats_df = pd.read_sql_table(table_name, con=engine)
 
     return stats_df
-
-
-
-
 
 import google.auth
 from google.cloud import storage
