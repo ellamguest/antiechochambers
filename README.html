@@ -11798,23 +11798,6 @@ div#notebook {
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[105]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">autoreload</span> 2
-
-<span class="kn">from</span> <span class="nn">network_stats</span> <span class="k">import</span> <span class="o">*</span>
-<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
-<span class="kn">from</span> <span class="nn">bokeh.plotting</span> <span class="k">import</span> <span class="n">figure</span><span class="p">,</span> <span class="n">output_notebook</span><span class="p">,</span> <span class="n">show</span><span class="p">,</span> <span class="n">ColumnDataSource</span><span class="p">,</span> <span class="n">Row</span><span class="p">,</span> <span class="n">Column</span>
-<span class="kn">from</span> <span class="nn">bokeh.models</span> <span class="k">import</span> <span class="n">HoverTool</span>
-
-<span class="n">output_notebook</span><span class="p">(</span><span class="n">hide_banner</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
 
 <div class="output_wrapper">
 <div class="output">
@@ -11828,10 +11811,10 @@ div#notebook {
 
 
 
-<div id="6f896698-cfa9-4826-b1c4-a7bff6cec5fe"></div>
+<div id="dc382e15-7411-4c7a-94ce-89989dd46f33"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#6f896698-cfa9-4826-b1c4-a7bff6cec5fe');
+var element = $('#dc382e15-7411-4c7a-94ce-89989dd46f33');
 
 (function(root) {
   function now() {
@@ -12102,87 +12085,9 @@ var element = $('#6f896698-cfa9-4826-b1c4-a7bff6cec5fe');
 
 </div>
 <div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[117]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">getDensityDf</span><span class="p">():</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">load_stats_df</span><span class="p">()</span>
-    <span class="n">density</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;stat&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;count&#39;</span><span class="p">]</span>
-               <span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;subreddit&#39;</span><span class="p">)</span>
-               <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span>
-                       <span class="p">{</span><span class="s1">&#39;author_net_density&#39;</span><span class="p">:</span><span class="s1">&#39;author&#39;</span><span class="p">,</span>
-                           <span class="s1">&#39;sub_net_density&#39;</span><span class="p">:</span><span class="s1">&#39;sub&#39;</span><span class="p">,</span>
-                       <span class="s1">&#39;bipartite_edge_weights&#39;</span><span class="p">:</span><span class="s1">&#39;edge_count&#39;</span><span class="p">}))</span>
-
-    <span class="n">density</span><span class="p">[</span><span class="s1">&#39;count_ratio&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">density</span><span class="p">[</span><span class="s1">&#39;author_counts&#39;</span><span class="p">]</span><span class="o">/</span><span class="n">density</span><span class="p">[</span><span class="s1">&#39;sub_counts&#39;</span><span class="p">]</span>
-    <span class="n">density</span><span class="p">[</span><span class="s1">&#39;density_ratio&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">density</span><span class="p">[</span><span class="s1">&#39;author&#39;</span><span class="p">]</span><span class="o">/</span><span class="n">density</span><span class="p">[</span><span class="s1">&#39;sub&#39;</span><span class="p">]</span>
-    <span class="n">density</span> <span class="o">=</span> <span class="n">density</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
-    <span class="n">density</span> <span class="o">=</span> <span class="n">density</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;author&#39;</span><span class="p">:</span><span class="s1">&#39;authorNetDensity&#39;</span><span class="p">,</span>
-                           <span class="s1">&#39;sub&#39;</span><span class="p">:</span><span class="s1">&#39;subredditNetDensity&#39;</span><span class="p">,</span>
-                           <span class="s1">&#39;author_counts&#39;</span><span class="p">:</span><span class="s1">&#39;numAuthors&#39;</span><span class="p">,</span>
-                           <span class="s1">&#39;sub_counts&#39;</span><span class="p">:</span><span class="s1">&#39;numSubreddits&#39;</span><span class="p">,</span>
-                           <span class="s1">&#39;edge_count&#39;</span><span class="p">:</span> <span class="s1">&#39;numEdges&#39;</span><span class="p">})</span>
-    
-    <span class="k">return</span> <span class="n">density</span>
-
-
-
-<span class="k">def</span> <span class="nf">scatterPlot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">xaxis</span><span class="p">,</span> <span class="n">yaxis</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
-    <span class="n">source</span> <span class="o">=</span> <span class="n">ColumnDataSource</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">)</span>
-
-    <span class="n">hover</span> <span class="o">=</span> <span class="n">HoverTool</span><span class="p">(</span><span class="n">tooltips</span><span class="o">=</span><span class="p">[</span>
-        <span class="p">(</span><span class="s2">&quot;subreddit&quot;</span><span class="p">,</span> <span class="s2">&quot;@subreddit&quot;</span><span class="p">),</span>
-        <span class="p">(</span><span class="s2">&quot;author density&quot;</span><span class="p">,</span> <span class="s2">&quot;@authorNetDensity</span><span class="si">{1.111}</span><span class="s2">&quot;</span><span class="p">),</span>
-        <span class="p">(</span><span class="s2">&quot;subreddit density&quot;</span><span class="p">,</span> <span class="s2">&quot;@subredditNetDensity</span><span class="si">{1.111}</span><span class="s2">&quot;</span><span class="p">),</span>
-        <span class="p">(</span><span class="s2">&quot;# authors&quot;</span><span class="p">,</span> <span class="s2">&quot;@numAuthors</span><span class="si">{int}</span><span class="s2">&quot;</span><span class="p">),</span>
-        <span class="p">(</span><span class="s2">&quot;# subreddits&quot;</span><span class="p">,</span> <span class="s2">&quot;@numSubreddits</span><span class="si">{int}</span><span class="s2">&quot;</span><span class="p">),</span>
-        <span class="p">(</span><span class="s2">&quot;# author-subreddit edges&quot;</span><span class="p">,</span> <span class="s2">&quot;@numEdges</span><span class="si">{int}</span><span class="s2">&quot;</span><span class="p">),</span>
-    <span class="p">])</span>
-
-    <span class="n">tools</span> <span class="o">=</span> <span class="p">[</span><span class="n">hover</span><span class="p">,</span> <span class="s2">&quot;box_select&quot;</span><span class="p">,</span> <span class="s2">&quot;reset&quot;</span><span class="p">,</span> <span class="s2">&quot;wheel_zoom&quot;</span><span class="p">]</span>
-    
-    <span class="n">p</span> <span class="o">=</span> <span class="n">figure</span><span class="p">(</span><span class="n">plot_width</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">plot_height</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span> <span class="n">tools</span><span class="p">,</span>
-               <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">)</span>
-
-    <span class="n">p</span><span class="o">.</span><span class="n">circle</span><span class="p">(</span><span class="n">xaxis</span><span class="p">,</span> <span class="n">yaxis</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;grey&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">)</span>
-
-    <span class="n">main</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;subreddit&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="s1">&#39;The_Donald&#39;</span><span class="p">,</span> <span class="s1">&#39;changemyview&#39;</span><span class="p">])]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="n">main</span><span class="p">[</span><span class="s1">&#39;color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span><span class="s1">&#39;orange&#39;</span><span class="p">]</span>
-    <span class="n">main_source</span> <span class="o">=</span> <span class="n">ColumnDataSource</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">main</span><span class="p">)</span>
-
-    <span class="n">p</span><span class="o">.</span><span class="n">circle</span><span class="p">(</span><span class="n">xaxis</span><span class="p">,</span> <span class="n">yaxis</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;color&#39;</span><span class="p">,</span> <span class="n">line_color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">main_source</span><span class="p">)</span>
-
-    <span class="n">p</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">axis_label</span> <span class="o">=</span> <span class="n">xaxis</span>
-    <span class="n">p</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">axis_label</span> <span class="o">=</span> <span class="n">yaxis</span>
-
-    <span class="n">p</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">minor_tick_line_color</span> <span class="o">=</span> <span class="kc">None</span> 
-    <span class="n">p</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">minor_tick_line_color</span> <span class="o">=</span> <span class="kc">None</span> 
-
-    <span class="n">p</span><span class="o">.</span><span class="n">xgrid</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">p</span><span class="o">.</span><span class="n">ygrid</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="kc">False</span>
-
-    <span class="k">return</span> <span class="n">p</span>
-</pre></div>
-
-</div>
-</div>
-</div>
 
 </div>
 <div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[103]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">getDensityDf</span><span class="p">()</span>
-<span class="n">num_subs</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">subreddit</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-</pre></div>
-
-</div>
-</div>
-</div>
 
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
@@ -12204,19 +12109,6 @@ var element = $('#6f896698-cfa9-4826-b1c4-a7bff6cec5fe');
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[118]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">densityPlot</span> <span class="o">=</span> <span class="n">scatterPlot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s2">&quot;authorNetDensity&quot;</span><span class="p">,</span> <span class="s2">&quot;subredditNetDensity&quot;</span><span class="p">,</span> <span class="s2">&quot;Comparison of One-Mode Network Densities&quot;</span><span class="p">)</span>
-<span class="n">countPlot</span> <span class="o">=</span> <span class="n">scatterPlot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s2">&quot;numAuthors&quot;</span><span class="p">,</span> <span class="s2">&quot;numSubreddits&quot;</span><span class="p">,</span> <span class="s2">&quot;Comparison of Node Counts by Type&quot;</span><span class="p">)</span>
-
-<span class="n">show</span><span class="p">(</span><span class="n">Row</span><span class="p">(</span><span class="n">densityPlot</span><span class="p">,</span> <span class="n">countPlot</span><span class="p">))</span>
-</pre></div>
-
-</div>
-</div>
-</div>
 
 <div class="output_wrapper">
 <div class="output">
@@ -12245,10 +12137,10 @@ var element = $('#6f896698-cfa9-4826-b1c4-a7bff6cec5fe');
 
 
 
-<div id="886b6e37-2712-4656-ae00-d0b85ce98c48"></div>
+<div id="022dfece-7b28-44b6-9f88-70c42eb94119"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#886b6e37-2712-4656-ae00-d0b85ce98c48');
+var element = $('#022dfece-7b28-44b6-9f88-70c42eb94119');
 (function(root) {
   function embed_document(root) {
     
@@ -12284,19 +12176,6 @@ var element = $('#886b6e37-2712-4656-ae00-d0b85ce98c48');
 
 </div>
 <div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[124]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">authorEdgePlot</span> <span class="o">=</span> <span class="n">scatterPlot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s2">&quot;numEdges&quot;</span><span class="p">,</span> <span class="s2">&quot;authorNetDensity&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-<span class="n">subredditEdgePlot</span> <span class="o">=</span> <span class="n">scatterPlot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s2">&quot;numEdges&quot;</span><span class="p">,</span> <span class="s2">&quot;subredditNetDensity&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-
-<span class="n">show</span><span class="p">(</span><span class="n">Row</span><span class="p">(</span><span class="n">authorEdgePlot</span><span class="p">,</span> <span class="n">subredditEdgePlot</span><span class="p">))</span>
-</pre></div>
-
-</div>
-</div>
-</div>
 
 <div class="output_wrapper">
 <div class="output">
@@ -12325,10 +12204,10 @@ var element = $('#886b6e37-2712-4656-ae00-d0b85ce98c48');
 
 
 
-<div id="9f3533c8-6ea6-48d5-bb59-6214211900da"></div>
+<div id="92d46999-2852-4b60-9cdd-ead55b387a42"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#9f3533c8-6ea6-48d5-bb59-6214211900da');
+var element = $('#92d46999-2852-4b60-9cdd-ead55b387a42');
 (function(root) {
   function embed_document(root) {
     
@@ -12364,52 +12243,6 @@ var element = $('#9f3533c8-6ea6-48d5-bb59-6214211900da');
 
 </div>
 <div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[129]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="o">!</span> jupyter nbconvert --to markdown README.ipynb
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>[NbConvertApp] Converting notebook README.ipynb to markdown
-//anaconda/envs/python3.6/lib/python3.6/site-packages/nbconvert/filters/datatypefilter.py:41: UserWarning: Your element with mimetype(s) dict_keys([&#39;application/javascript&#39;, &#39;application/vnd.bokehjs_load.v0+json&#39;]) is not able to be represented.
-  mimetypes=output.keys())
-//anaconda/envs/python3.6/lib/python3.6/site-packages/nbconvert/filters/datatypefilter.py:41: UserWarning: Your element with mimetype(s) dict_keys([&#39;application/javascript&#39;, &#39;application/vnd.bokehjs_exec.v0+json&#39;]) is not able to be represented.
-  mimetypes=output.keys())
-[NbConvertApp] Writing 6695 bytes to README.md
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[130]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="o">!</span> conda install pandoc -y
-</pre></div>
-
-</div>
-</div>
-</div>
 
 <div class="output_wrapper">
 <div class="output">
@@ -12440,16 +12273,6 @@ pandoc-2.2.1-h 100% |################################| Time: 0:00:02   5.03 MB/s
 
 </div>
 <div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[131]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="o">!</span> jupyter nbconvert --template<span class="o">=</span>nbextensions --to<span class="o">=</span>html README.ipynb
-</pre></div>
-
-</div>
-</div>
-</div>
 
 <div class="output_wrapper">
 <div class="output">
@@ -12462,40 +12285,7 @@ pandoc-2.2.1-h 100% |################################| Time: 0:00:02   5.03 MB/s
 
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>[NbConvertApp] Converting notebook README.ipynb to html
-Traceback (most recent call last):
-  File &#34;//anaconda/envs/python3.6/bin/jupyter-nbconvert&#34;, line 11, in &lt;module&gt;
-    load_entry_point(&#39;nbconvert==5.3.1&#39;, &#39;console_scripts&#39;, &#39;jupyter-nbconvert&#39;)()
-  File &#34;//anaconda/envs/python3.6/lib/python3.6/site-packages/jupyter_core/application.py&#34;, line 267, in launch_instance
-    return super(JupyterApp, cls).launch_instance(argv=argv, **kwargs)
-  File &#34;//anaconda/envs/python3.6/lib/python3.6/site-packages/traitlets/config/application.py&#34;, line 658, in launch_instance
-    app.start()
-  File &#34;//anaconda/envs/python3.6/lib/python3.6/site-packages/nbconvert/nbconvertapp.py&#34;, line 325, in start
-    self.convert_notebooks()
-  File &#34;//anaconda/envs/python3.6/lib/python3.6/site-packages/nbconvert/nbconvertapp.py&#34;, line 493, in convert_notebooks
-    self.convert_single_notebook(notebook_filename)
-  File &#34;//anaconda/envs/python3.6/lib/python3.6/site-packages/nbconvert/nbconvertapp.py&#34;, line 464, in convert_single_notebook
-    output, resources = self.export_single_notebook(notebook_filename, resources, input_buffer=input_buffer)
-  File &#34;//anaconda/envs/python3.6/lib/python3.6/site-packages/nbconvert/nbconvertapp.py&#34;, line 393, in export_single_notebook
-    output, resources = self.exporter.from_filename(notebook_filename, resources=resources)
-  File &#34;//anaconda/envs/python3.6/lib/python3.6/site-packages/nbconvert/exporters/exporter.py&#34;, line 174, in from_filename
-    return self.from_file(f, resources=resources, **kw)
-  File &#34;//anaconda/envs/python3.6/lib/python3.6/site-packages/nbconvert/exporters/exporter.py&#34;, line 192, in from_file
-    return self.from_notebook_node(nbformat.read(file_stream, as_version=4), resources=resources, **kw)
-  File &#34;//anaconda/envs/python3.6/lib/python3.6/site-packages/nbconvert/exporters/html.py&#34;, line 85, in from_notebook_node
-    return super(HTMLExporter, self).from_notebook_node(nb, resources, **kw)
-  File &#34;//anaconda/envs/python3.6/lib/python3.6/site-packages/nbconvert/exporters/templateexporter.py&#34;, line 295, in from_notebook_node
-    output = self.template.render(nb=nb_copy, resources=resources)
-  File &#34;//anaconda/envs/python3.6/lib/python3.6/site-packages/nbconvert/exporters/templateexporter.py&#34;, line 111, in template
-    self._template_cached = self._load_template()
-  File &#34;//anaconda/envs/python3.6/lib/python3.6/site-packages/nbconvert/exporters/templateexporter.py&#34;, line 266, in _load_template
-    return self.environment.get_template(template_file)
-  File &#34;//anaconda/envs/python3.6/lib/python3.6/site-packages/jinja2/environment.py&#34;, line 830, in get_template
-    return self._load_template(name, self.make_globals(globals))
-  File &#34;//anaconda/envs/python3.6/lib/python3.6/site-packages/jinja2/environment.py&#34;, line 804, in _load_template
-    template = self.loader.load(self, name, globals)
-  File &#34;//anaconda/envs/python3.6/lib/python3.6/site-packages/jinja2/loaders.py&#34;, line 408, in load
-    raise TemplateNotFound(name)
-jinja2.exceptions.TemplateNotFound: nbextensions
+[NbConvertApp] Writing 632547 bytes to README.html
 </pre>
 </div>
 </div>
@@ -12505,14 +12295,43 @@ jinja2.exceptions.TemplateNotFound: nbextensions
 
 </div>
 <div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="o">!</span> pandoc -s -r html README.html -o README.md
-</pre></div>
 
 </div>
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>README-old.md                      jupyter_nbconvert_config.py
+README.ipynb                       lesmismatrix.html
+README.md                          <span class="ansi-blue-intense-fg ansi-bold">lesmismatrix_files</span>
+Untitled.ipynb                     nbextensions.tpl
+Untitled1.ipynb                    network-measures.ipynb
+<span class="ansi-blue-intense-fg ansi-bold">__pycache__</span>                        network_stats.csv
+_config.yml                        network_stats.db
+<span class="ansi-blue-intense-fg ansi-bold">antiechochambers</span>                   <span class="ansi-green-intense-fg ansi-bold">network_stats.py</span>
+antiechochambers-1ba7f7f4c68e.json reddit-network-774059619c28.json
+antiechochambers-ebc9093af6b4.json requirements.txt
+bg-api-key.json                    <span class="ansi-blue-intense-fg ansi-bold">scripts</span>
+<span class="ansi-blue-intense-fg ansi-bold">cache</span>                              sqlite_example.db
+<span class="ansi-blue-intense-fg ansi-bold">chamber-networks</span>                   sqlite_example.db3
+credentials.json                   test.sh
+<span class="ansi-blue-intense-fg ansi-bold">data</span>                               untitled.txt
+ec2-networks-key-pair.pem          untitled1.txt
+<span class="ansi-blue-intense-fg ansi-bold">figures</span>                            untitled2.txt
+googleCloud.py                     untitled3.txt
+googleComputeInstanceSetup.txt     untitled4.txt
+</pre>
+</div>
+</div>
+
 </div>
 </div>
 
