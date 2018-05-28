@@ -1,9 +1,6 @@
-SQLAlchemy==1.1.13
 numpy==1.12.1
+SQLAlchemy==1.1.13
 pandas==0.22.0
-tqdm==4.19.4
-scipy==1.0.0
-protobuf==3.5.2.post1
-snakeviz
+networkx==2.0
 google-cloud-storage
 google-cloud-bigquery
