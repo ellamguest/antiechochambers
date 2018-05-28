@@ -39,24 +39,25 @@ def fetchQuery(query):
 
 def fetchSubredditData(subreddit):
     """should create bot table to call on"""
-    """for main subs only"""
-    query = """SELECT subreddit, author, COUNT(created_utc) as weight
-                FROM `fh-bigquery.reddit_comments.2017_06`
+    query = f"""
+                SELECT *
+                FROM `aerobic-datum-126519.sms_18_sample_subreddits.allAuthorCommentCounts`
                 WHERE author in (SELECT author
-                                 FROM `aerobic-datum-126519.sms_18_sample_subreddits.mainSubInCounts`
-                                 WHERE (subreddit = '{}') AND (authorInCount > 2) AND
+                                 FROM `aerobic-datum-126519.sms_18_sample_subreddits.subredditAuthors`
+                                 WHERE (subreddit = '{subreddit}') AND (weight > 2) AND
                                          author not in (SELECT author
                                                          FROM `fh-bigquery.reddit_comments.bots_201505`)
                                         AND (lower(author) NOT LIKE '%bot%')
                                         AND (author NOT LIKE 'JlmmyButler')
                                         AND (author NOT LIKE 'TotesMessenger'))
-                GROUP BY subreddit, author
-                HAVING weight > 2""".format(subreddit)
-
+                    AND authorCommentCount > 2
+                ORDER BY subreddit, author
+                """
 
     data = fetchQuery(query)
-
+    
     return data
+
 
 def get_node_ids_dict(edgelist):
     node_ids = list(edgelist.subreddit.unique()) + list(edgelist.author.unique())
@@ -131,27 +132,6 @@ def fetchSubList():
 
     return data
 
-def fetchSubredditData(subreddit):
-    """should create bot table to call on"""
-    query = """
-                SELECT *
-                FROM `aerobic-datum-126519.sms_18_sample_subreddits.allAuthorCommentCounts`
-                WHERE author in (SELECT author
-                                 FROM `aerobic-datum-126519.sms_18_sample_subreddits.randomSubredditAuthors`
-                                 WHERE (subreddit = '{}') AND (authorInCOunt > 2) AND
-                                         author not in (SELECT author
-                                                         FROM `fh-bigquery.reddit_comments.bots_201505`)
-                                        AND (lower(author) NOT LIKE '%bot%')
-                                        AND (author NOT LIKE 'JlmmyButler')
-                                        AND (author NOT LIKE 'TotesMessenger'))
-                    AND authorCommentCount > 2
-                ORDER BY subreddit, author
-                """.format(subreddit)
-
-    data = fetchQuery(query)
-
-    return data
-
 def getStatsDf(subreddit):
     data = fetchSubredditData(subreddit)
     data.columns = ['subreddit','author','weight']
@@ -176,10 +156,6 @@ def load_stats_df():
     stats_df = pd.read_sql_table(table_name, con=engine)
 
     return stats_df
-
-
-
-
 
 import google.auth
 from google.cloud import storage

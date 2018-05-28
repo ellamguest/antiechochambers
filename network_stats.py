@@ -177,12 +177,15 @@ def getStatsDf(subreddit):
 
     return stats_df
 
-def saveSQL(df, table_name, **kwargs):
-    engine = get_engine()
+def get_engine(database_name='network_stats'):
+    return create_engine('sqlite:///{}.db'.format(database_name), echo=False)
+
+def saveSQL(df, table_name, database_name='network_stats', **kwargs):
+    engine = get_engine(database_name=database_name)
     df.to_sql(name=table_name, con=engine,  **kwargs)
     
-def loadSQL(table_name, index_col=None):
-    engine = get_engine()
+def loadSQL(table_name, index_col=None, database_name='network_stats'):
+    engine = get_engine(database_name=database_name)
     df = pd.read_sql_table(table_name=table_name, con=engine, index_col=index_col)
     
     return df
@@ -196,9 +199,6 @@ def saveStatsDf(subreddit):
 def load_stats_df():
     return loadSQL('merged_stats_df')
       
-def get_engine():
-    return create_engine('sqlite:///network_stats.db', echo=False)
-
 def getAuthorCounts(subreddit, data):
     authorCounts = data.subreddit.value_counts(normalize=True).sort_values(ascending=False)
     authorCounts.name = subreddit
@@ -232,7 +232,6 @@ def saveSubredditWeights(subreddit):
     
     mergeTables('subredditAuthorCounts', authorCounts)
     mergeTables('subredditCommentCounts', commentCounts)
-    
     
     
 
