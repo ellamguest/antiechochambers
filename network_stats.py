@@ -14,7 +14,7 @@ from google.cloud import storage
 
 cache_file = lambda filename: Path().resolve().joinpath(*['cache', filename])
 
-""""" DATA IMPORT & EXPORT """
+""" DATA IMPORT & EXPORT """
 
 """BIGQUERY FUNCTIONS"""
 
@@ -43,7 +43,7 @@ def fetchQuery(query):
     
 def fetchSubList():
     """should create bot table to call on"""
-    query = f"""SELECT *
+    query = """SELECT *
                  FROM `aerobic-datum-126519.sms_18_sample_subreddits.randomSubreddits`
                  """
 
@@ -53,7 +53,7 @@ def fetchSubList():
 
 def fetchSubredditData(subreddit):
     """should create bot table to call on"""
-    query = f"""
+    query = """
                 SELECT *
                 FROM `aerobic-datum-126519.sms_18_sample_subreddits.allAuthorCommentCounts`
                 WHERE author in (SELECT author
@@ -97,7 +97,7 @@ def upload_blob(bucket_name, file_name):
 
     blob.upload_from_filename(file_name)
 
-    print(f'File {file_name} uploaded.')    
+    print('File {} uploaded.'.format(file_name))    
     
     
 """ NETWORK FUNCTIONS """    
@@ -142,8 +142,8 @@ def get_network_density(sub_net):
     return E/P
     
 def get_degrees(network, network_type):
-    degrees = pd.DataFrame(np.count_nonzero(network.todense(), axis=1), columns=[f'{network_type}_degrees'])
-    weighted_degrees = pd.DataFrame(network.sum(axis=1),columns=[f'{network_type}_weighted_degrees'])
+    degrees = pd.DataFrame(np.count_nonzero(network.todense(), axis=1), columns=['{}_degrees'.format(network_type)])
+    weighted_degrees = pd.DataFrame(network.sum(axis=1),columns=['{}_weighted_degrees'.format(network_type)])
     
     return degrees, weighted_degrees
     
@@ -194,7 +194,7 @@ def saveStatsDf(subreddit):
     stats_df = getStatsDf(subreddit)
     table_name='merged_stats_df'
     saveSQL(stats_df, table_name)
-    print(f'done with {subreddit}!')
+    print('done with {}!'.format(subreddit))
     
 def load_stats_df():
     return loadSQL('merged_stats_df')

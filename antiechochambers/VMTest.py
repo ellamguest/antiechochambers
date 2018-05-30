@@ -171,7 +171,7 @@ def saveSQL(df, table_name, database_name, **kwargs):
     engine = get_engine(database_name=database_name)
     df.to_sql(name=table_name, con=engine,  **kwargs)
     
-def loadSQL(table_name, database_name, index_col=None):
+def loadSQL(table_name, database_name, index_col='index'):
     engine = get_engine(database_name=database_name)
     df = pd.read_sql_table(table_name=table_name, con=engine, index_col=index_col)
     

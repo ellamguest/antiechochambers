@@ -1,6 +1,7 @@
 from network_stats import *
 from bokeh.plotting import figure, output_notebook, show, ColumnDataSource, Row, Column
 from bokeh.models import HoverTool
+import subprocess
 
 output_notebook(hide_banner=True)
 
@@ -66,8 +67,6 @@ def scatterPlot(df, xaxis, yaxis, title, balance=False):
     return p
 
 
-
-import subprocess
 
 def saveWithoutInputCells():
     """need to figure out %%writefile nbextensions.tpl"""
