@@ -1,6 +1,0 @@
-numpy==1.12.1
-SQLAlchemy==1.1.13
-pandas==0.22.0
-networkx==2.0
-google-cloud-storage
-google-cloud-bigquery
