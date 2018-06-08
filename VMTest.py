@@ -13,6 +13,8 @@ import inspect
 from pathlib import Path
 from functools import wraps
 
+
+## DATA
 CACHE = Path('./cache')
 
 
@@ -97,6 +99,14 @@ def checkCompleted(database_name):
         completed.append(name[0])
     
     return completed
+
+def removeAuthors(df):
+    skipAuthors = loadSQL('skipAuthors','reference')['0']
+    subset = df[~df['author'].isin(skipAuthors)].copy()
+    
+    return subset
+
+### NETWORK
 
 def getBipartiteNetwork(df):
     B = nx.Graph()
