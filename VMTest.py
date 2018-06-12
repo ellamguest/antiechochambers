@@ -101,7 +101,7 @@ def checkCompleted(database_name):
     return completed
 
 def removeAuthors(df):
-    skipAuthors = loadSQL('skipAuthors','reference')['0']
+    skipAuthors = loadSQL('skipAuthors','allEdges')['author']
     subset = df[~df['author'].isin(skipAuthors)].copy()
     
     return subset
@@ -214,6 +214,7 @@ if __name__ == "__main__":
     
     database_name = 'subNetstats'
     completed = checkCompleted(database_name)
+    completed = [name for name in completed if name not in ['skipAuthors','defaults']]
     n = 1
     for subreddit in sample:
         if subreddit not in completed:
