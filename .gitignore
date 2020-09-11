@@ -115,6 +115,7 @@ cache/
 /cache/
 /data/
 /figures/
+/R-visuals/
 
 *.DS_store
 
